@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace RecipeBox;
 
 public class Library
@@ -5,21 +7,42 @@ public class Library
     private readonly DirectoryInfo _libraryDir;
     private readonly Dictionary<string, Recipe> _recipes = new();
     
-    private Library(string libraryPath)
+    private Library(DirectoryInfo libraryPath)
     {
-        _libraryDir = new DirectoryInfo(libraryPath);
-        
-        if (!_libraryDir.Exists)
-        {
-            Directory.CreateDirectory(_libraryDir.FullName);
-        }
+        _libraryDir = libraryPath;
     }
     
-    public static async Task<Library> Create(string libraryPath)
+    public static async Task<Library> Create(DirectoryInfo libraryPath)
     {
         var library = new Library(libraryPath);
+        
+        if (!libraryPath.Exists)
+        {
+            Directory.CreateDirectory(libraryPath.FullName);
+            InitializeWithExampleRecipe(libraryPath);
+        }
+        
         await library.LoadRecipes();
         return library;
+    }
+    
+    private static void InitializeWithExampleRecipe(DirectoryInfo libraryDir)
+    {
+        const string exampleFilename = "banana-bread.rcp";
+        
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream($"RecipeBox.recipes.{exampleFilename}");
+
+        if (stream == null) 
+            return;
+        
+        using var reader = new StreamReader(stream);
+        var recipeContent = reader.ReadToEnd();
+            
+        var recipePath = Path.Combine(libraryDir.FullName, exampleFilename);
+            
+        if (!File.Exists(recipePath))
+            File.WriteAllText(recipePath, recipeContent);
     }
     
     private async Task LoadRecipes()

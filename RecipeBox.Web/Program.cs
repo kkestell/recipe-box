@@ -19,10 +19,7 @@ public static class Program
         });
 
         var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var recipesPath = Path.Combine(documentsPath, "Recipes");
-
-        if (!Directory.Exists(recipesPath))
-            Directory.CreateDirectory(recipesPath);
+        var recipesPath = new DirectoryInfo(Path.Combine(documentsPath, "Recipes"));
 
         var library = await Library.Create(recipesPath);
         

@@ -38,14 +38,12 @@
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <None Include="..\static\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>static\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
     </ItemGroup>
 
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <EmbeddedResource Include="..\static\**">
-            <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-        </EmbeddedResource>
+        <EmbeddedResource Include="..\static\**" />
     </ItemGroup>
 
 </Project>

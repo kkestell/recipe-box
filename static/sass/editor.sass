@@ -1,0 +1,85 @@
+.CodeMirror-foldmarker, .CodeMirror
+    font-family: system-ui, sans-serif
+
+.CodeMirror-foldmarker
+    text-shadow: none !important
+    color: var(--editor-frontmatter-color) !important
+    margin-left: 2ch !important
+
+.CodeMirror-foldgutter-folded,.CodeMirror-foldgutter-open
+    line-height: 1
+    font-size: 1.25rem
+
+.CodeMirror
+    height: 100vh
+    width: 100%
+    padding: 1rem 1.5rem 1rem 0.5rem
+    background: var(--view-bg-color)
+    color: var(--view-fg-color)
+
+    &-line
+        text-indent: -2ch !important
+        padding-left: 5ch !important
+
+        &:has(.cm-recipe-prefix), &:has(.CodeMirror-foldmarker)
+            padding-left: 3ch !important
+
+        &:has(.cm-recipe-frontmatter)
+            text-indent: 0 !important
+            padding-left: 30px !important
+
+        &:has(.cm-recipe-ingredient),&:has(.cm-recipe-unit)
+            text-indent: 0 !important
+            padding-left: 30px !important
+
+    &-gutters
+        background: var(--editor-gutter-bg-color)
+        border-right: 1px solid var(--editor-gutter-border-color)
+
+    &-linenumber
+        color: var(--editor-linenumber-color)
+
+    &-selected
+        background: var(--editor-selection-color) !important
+
+    &-cursor
+        border-left: 1px solid var(--editor-cursor-color)
+
+.cm-recipe
+    &-title
+        color: var(--editor-title-color)
+        font-weight: bold
+        font-size: 1.5rem
+        vertical-align: middle
+
+    &-subtitle
+        color: var(--editor-subtitle-color)
+        font-weight: bold
+        font-size: 1.25rem
+        vertical-align: middle
+
+    &-prefix
+        color: var(--editor-prefix-color)
+        font-family: "Source Code Pro", "Fira Mono", SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace
+        vertical-align: middle
+
+    &-ingredient
+        color: var(--editor-ingredient-color)
+        vertical-align: middle
+
+    &-step
+        color: var(--editor-step-color)
+        vertical-align: middle
+
+    &-description
+        color: var(--editor-description-color)
+        vertical-align: middle
+
+    &-frontmatter
+        color: var(--editor-frontmatter-color)
+        vertical-align: middle
+
+.error-line
+    text-decoration: underline wavy var(--editor-error-color)
+    text-decoration-skip-ink: none
+    text-decoration-thickness: 1px

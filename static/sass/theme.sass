@@ -1,0 +1,202 @@
+// ============================================================================
+// Catppuccin Colors
+// ============================================================================
+
+:root
+    --rosewater-color: #dc8a78
+    --flamingo-color: #dd7878
+    --pink-color: #ea76cb
+    --mauve-color: #8839ef
+    --red-color: #d20f39
+    --maroon-color: #e64553
+    --peach-color: #fe640b
+    --yellow-color: #df8e1d
+    --green-color: #40a02b
+    --teal-color: #179299
+    --sky-color: #04a5e5
+    --sapphire-color: #209fb5
+    --blue-color: #1e66f5
+    --lavender-color: #7287fd
+
+@media (prefers-color-scheme: dark)
+    :root
+        --rosewater-color: #f5e0dc
+        --flamingo-color: #f2cdcd
+        --pink-color: #f5c2e7
+        --mauve-color: #cba6f7
+        --red-color: #f38ba8
+        --maroon-color: #eba0ac
+        --peach-color: #fab387
+        --yellow-color: #f9e2af
+        --green-color: #a6e3a1
+        --teal-color: #94e2d5
+        --sky-color: #89dceb
+        --sapphire-color: #74c7ec
+        --blue-color: #89b4fa
+        --lavender-color: #b4befe
+
+// ============================================================================
+// Adwaita Colors
+// ============================================================================
+
+@function border-color($opacity)
+    @return rgba(currentColor, $opacity)
+
+:root
+    --accent-color: #1c71d8
+    --accent-bg-color: #3584e4
+    --accent-fg-color: #ffffff
+
+    --destructive-color: #c01c28
+    --destructive-bg-color: #e01b24
+    --destructive-fg-color: #ffffff
+
+    --success-color: #1b8553
+    --success-bg-color: #2ec27e
+    --success-fg-color: #ffffff
+
+    --warning-color: #9c6e03
+    --warning-bg-color: #e5a50a
+    --warning-fg-color: rgba(0, 0, 0, 0.8)
+
+    --error-color: #c01c28
+    --error-bg-color: #e01b24
+    --error-fg-color: #ffffff
+
+    --window-bg-color: #fafafa
+    --window-fg-color: rgba(0, 0, 0, 0.8)
+
+    --view-bg-color: #ffffff
+    --view-fg-color: rgba(0, 0, 0, 0.8)
+
+    --headerbar-bg-color: #ffffff
+    --headerbar-fg-color: rgba(0, 0, 0, 0.8)
+    --headerbar-border-color: rgba(0, 0, 0, 0.8)
+    --headerbar-backdrop-color: #fafafa
+    --headerbar-shade-color: rgba(0, 0, 0, 0.12)
+    --headerbar-darker-shade-color: rgba(0, 0, 0, 0.12)
+
+    --sidebar-bg-color: #ebebeb
+    --sidebar-fg-color: rgba(0, 0, 0, 0.8)
+    --sidebar-backdrop-color: #f2f2f2
+    --sidebar-border-color: rgba(0, 0, 0, 0.07)
+    --sidebar-shade-color: rgba(0, 0, 0, 0.07)
+
+    --secondary-sidebar-bg-color: #f3f3f3
+    --secondary-sidebar-fg-color: rgba(0, 0, 0, 0.8)
+    --secondary-sidebar-backdrop-color: #f6f6f6
+    --secondary-sidebar-border-color: rgba(0, 0, 0, 0.07)
+    --secondary-sidebar-shade-color: rgba(0, 0, 0, 0.07)
+
+    --card-bg-color: #ffffff
+    --card-fg-color: rgba(0, 0, 0, 0.8)
+    --card-shade-color: rgba(0, 0, 0, 0.07)
+
+    --thumbnail-bg-color: #ffffff
+    --thumbnail-fg-color: rgba(0, 0, 0, 0.8)
+
+    --dialog-bg-color: #fafafa
+    --dialog-fg-color: rgba(0, 0, 0, 0.8)
+
+    --popover-bg-color: #ffffff
+    --popover-fg-color: rgba(0, 0, 0, 0.8)
+    --popover-shade-color: rgba(0, 0, 0, 0.07)
+
+    --shade-color: rgba(0, 0, 0, 0.07)
+    --scrollbar-outline-color: #ffffff
+
+    --borders-opacity-regular: 0.15
+    --borders-opacity-high-contrast: 0.5
+
+@media (prefers-color-scheme: dark)
+    :root
+        --accent-color: #78aeed
+        --accent-bg-color: #3584e4
+        --accent-fg-color: #ffffff
+
+        --destructive-color: #ff7b63
+        --destructive-bg-color: #c01c28
+        --destructive-fg-color: #ffffff
+
+        --success-color: #8ff0a4
+        --success-bg-color: #26a269
+        --success-fg-color: #ffffff
+
+        --warning-color: #f8e45c
+        --warning-bg-color: #cd9309
+        --warning-fg-color: rgba(0, 0, 0, 0.8)
+
+        --error-color: #ff7b63
+        --error-bg-color: #c01c28
+        --error-fg-color: #ffffff
+
+        --window-bg-color: #242424
+        --window-fg-color: #ffffff
+
+        --view-bg-color: #1e1e1e
+        --view-fg-color: #ffffff
+
+        --headerbar-bg-color: #303030
+        --headerbar-fg-color: #ffffff
+        --headerbar-border-color: #ffffff
+        --headerbar-backdrop-color: #242424
+        --headerbar-shade-color: rgba(0, 0, 0, 0.36)
+        --headerbar-darker-shade-color: rgba(0, 0, 0, 0.9)
+
+        --sidebar-bg-color: #303030
+        --sidebar-fg-color: #ffffff
+        --sidebar-backdrop-color: #2a2a2a
+        --sidebar-border-color: rgba(0, 0, 0, 0.36)
+        --sidebar-shade-color: rgba(0, 0, 0, 0.25)
+
+        --secondary-sidebar-bg-color: #2a2a2a
+        --secondary-sidebar-fg-color: #ffffff
+        --secondary-sidebar-backdrop-color: #272727
+        --secondary-sidebar-border-color: rgba(0, 0, 0, 0.36)
+        --secondary-sidebar-shade-color: rgba(0, 0, 0, 0.25)
+
+        --card-bg-color: rgba(255, 255, 255, 0.08)
+        --card-fg-color: #ffffff
+        --card-shade-color: rgba(0, 0, 0, 0.36)
+
+        --thumbnail-bg-color: #383838
+        --thumbnail-fg-color: #ffffff
+
+        --dialog-bg-color: #383838
+        --dialog-fg-color: #ffffff
+
+        --popover-bg-color: #383838
+        --popover-fg-color: #ffffff
+        --popover-shade-color: rgba(0, 0, 0, 0.25)
+
+        --shade-color: rgba(0, 0, 0, 0.25)
+        --scrollbar-outline-color: rgba(0, 0, 0, 0.5)
+
+// ============================================================================
+// Editor
+// ============================================================================
+
+:root    
+    --editor-prefix-color: #aaa
+    --editor-selection-color: #ccc
+    --editor-cursor-color: #000
+    --editor-title-color: #000
+    --editor-subtitle-color: #444
+    --editor-ingredient-color: #555
+    --editor-step-color: #000
+    --editor-description-color: #666
+    --editor-frontmatter-color: #aaa
+    --editor-error-color: #f00
+
+@media (prefers-color-scheme: dark)
+    :root
+        --editor-prefix-color: #555
+        --editor-selection-color: #333
+        --editor-cursor-color: #fff
+        --editor-title-color: #fff
+        --editor-subtitle-color: #bbb
+        --editor-ingredient-color: #aaa
+        --editor-step-color: #fff
+        --editor-description-color: #999
+        --editor-frontmatter-color: #555
+        --editor-error-color: #f00

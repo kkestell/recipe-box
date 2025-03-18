@@ -1,0 +1,29 @@
+.toast
+    position: fixed
+    top: 0.5rem
+    left: 50%
+    transform: translateX(-50%)
+    z-index: 1000
+    height: 2.5rem
+    line-height: 2.5rem
+    padding: 0 1rem
+    border-radius: 0.5rem
+    opacity: 1
+    transition: all 0.3s ease-in-out
+    background-color: transparent
+    color: transparent
+
+    &.success
+        background-color: var(--success-bg-color)
+        color: var(--success-fg-color)
+
+    &.error
+        background-color: var(--error-bg-color)
+        color: var(--error-fg-color)
+
+    &.hidden
+        opacity: 0
+        visibility: hidden
+        background-color: transparent
+        color: transparent
+        transition: all 0.3s ease-in-out, visibility 0s linear 0.3s

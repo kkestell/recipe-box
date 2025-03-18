@@ -1,0 +1,173 @@
+.sidebar
+    background-color: var(--sidebar-bg-color)
+
+    header
+        position: sticky
+        top: 0
+        z-index: 1
+        background-color: var(--sidebar-bg-color)
+        padding: 1rem
+        height: 4rem
+        box-sizing: border-box
+
+        .header-default,
+        .header-search
+            display: flex
+            justify-content: space-between
+            align-items: center
+            opacity: 1
+            transition: opacity 0.2s ease-out
+            position: absolute
+            width: calc(100% - 2rem)
+            left: 1rem
+            top: 50%
+            transform: translateY(-50%)  // Center vertically for better alignment
+
+        .header-search
+            opacity: 0
+            pointer-events: none
+
+        &.search-mode
+            .header-default
+                opacity: 0
+                pointer-events: none
+
+            .header-search
+                opacity: 1
+                pointer-events: auto
+
+        h1
+            color: var(--sidebar-fg-color)
+            padding: 0
+            font-size: 1rem
+            margin: 0
+            line-height: 1  // Ensure consistent vertical height
+
+        .header-buttons
+            display: flex
+            gap: 0.5rem
+            align-items: center
+
+        // Unified button styles
+        .search-button,
+        .add-button,
+        .close-search-button
+            background: none
+            border: none
+            color: var(--sidebar-fg-color)
+            cursor: pointer
+            padding: 0.25rem
+            display: flex
+            align-items: center
+            justify-content: center
+            width: 2rem
+            height: 2rem
+            line-height: 1  // Fix cross-browser alignment issues
+
+        .add-button
+            font-size: 1.5rem
+            padding: 0 0.5rem
+
+        .search-input
+            flex: 1
+            margin-right: 0.5rem
+            padding: 0.25rem 1rem
+            border-radius: 4px
+            background: var(--popover-bg-color)
+            border: none
+            color: var(--popover-fg-color)
+            border-radius: 1rem
+            font-size: 0.9rem
+
+            &:focus
+                outline: 1px solid var(--accent-bg-color)
+
+    // Recipe list styles with reduced duplication
+    #recipe-list
+        list-style-type: none
+        padding: 0
+        margin: 0 0 1rem 0
+        font-size: 0.9rem
+
+        // Mixins to reduce code duplication
+        @mixin recipe-link
+            color: var(--sidebar-fg-color)
+            display: block
+            padding: 0.25rem 1rem
+            text-decoration: none
+
+            &.active
+                background-color: var(--accent-bg-color)
+                color: var(--accent-fg-color)
+
+        @mixin category-header-style($padding)
+            color: var(--sidebar-fg-color)
+            text-shadow: -1px -1px 0px var(--sidebar-shade-color)
+            font-weight: bold
+            padding: $padding
+            margin: 0
+            cursor: pointer
+            display: flex
+            align-items: center
+
+            &::before
+                content: '▼'
+                display: inline-block
+                margin-right: 0.5rem
+                font-size: 0.7em
+                transition: transform 0.2s ease
+
+        @mixin category-items-style
+            list-style-type: none
+            margin: 0
+
+        // Style for uncategorized recipes directly in the sidebar
+        > .recipe-item
+            margin: 0
+
+            .recipe
+                @include recipe-link
+
+        .category
+            margin: 0
+
+            .category-header
+                @include category-header-style(0.5rem 1rem)
+
+            &.collapsed .category-header::before
+                transform: rotate(-90deg)
+
+            .category-items
+                @include category-items-style
+                padding: 0 0 0 1.1rem
+
+                .recipe-item
+                    margin: 0 1rem 0 0
+
+                    .recipe
+                        @include recipe-link
+
+                .subcategory
+                    margin: 0
+
+                    .subcategory-header
+                        @include category-header-style(0.25rem 1rem)
+
+                    &.collapsed .subcategory-header::before
+                        transform: rotate(-90deg)
+
+                    .subcategory-items
+                        @include category-items-style
+                        padding: 0 0 0 1.1rem
+
+                        .recipe-item
+                            margin: 0 1rem 0 0
+
+                            .recipe
+                                @include recipe-link
+
+            &.collapsed .category-items
+                display: none
+
+            .subcategory.collapsed .subcategory-items
+                display: none

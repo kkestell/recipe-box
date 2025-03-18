@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox", "RecipeBox\RecipeBox.csproj", "{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Web", "RecipeBox.Web\RecipeBox.Web.csproj", "{B402869E-4F11-4DAF-A333-C1799ABFF657}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Tests", "RecipeBox.Tests\RecipeBox.Tests.csproj", "{D438640E-9247-4D59-AD0F-14E4D020AB9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B402869E-4F11-4DAF-A333-C1799ABFF657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B402869E-4F11-4DAF-A333-C1799ABFF657}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B402869E-4F11-4DAF-A333-C1799ABFF657}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B402869E-4F11-4DAF-A333-C1799ABFF657}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox", "RecipeBox\RecipeBox.csproj", "{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Core", "RecipeBox.Core\RecipeBox.Core.csproj", "{0D1B1F69-51F3-4683-A7BE-69C943EE7CA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Web", "RecipeBox.Web\RecipeBox.Web.csproj", "{B402869E-4F11-4DAF-A333-C1799ABFF657}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox", "RecipeBox\RecipeBox.csproj", "{B402869E-4F11-4DAF-A333-C1799ABFF657}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Tests", "RecipeBox.Tests\RecipeBox.Tests.csproj", "{D438640E-9247-4D59-AD0F-14E4D020AB9D}"
 EndProject

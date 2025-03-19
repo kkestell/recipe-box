@@ -1,3 +1,5 @@
+using RecipeBox.Core;
+
 namespace RecipeBox.Tests;
 
 [TestFixture]

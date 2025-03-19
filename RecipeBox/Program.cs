@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 
-namespace RecipeBox.Web;
+using RecipeBox.Core;
+
+namespace RecipeBox;
 
 public static class Program
 {

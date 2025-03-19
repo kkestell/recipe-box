@@ -1,4 +1,4 @@
-namespace RecipeBox.Web;
+namespace RecipeBox;
 
 public static class Pages
 {

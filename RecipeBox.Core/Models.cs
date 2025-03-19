@@ -1,4 +1,4 @@
-namespace RecipeBox;
+namespace RecipeBox.Core;
 
 public abstract record Quantity;
 

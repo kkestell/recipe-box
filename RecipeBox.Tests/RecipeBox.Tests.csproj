@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RecipeBox\RecipeBox.csproj" />
+      <ProjectReference Include="..\RecipeBox.Core\RecipeBox.Core.csproj" />
     </ItemGroup>
 
 </Project>

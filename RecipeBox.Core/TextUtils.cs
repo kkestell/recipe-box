@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace RecipeBox;
+namespace RecipeBox.Core;
 
 public static partial class TextUtils
 {

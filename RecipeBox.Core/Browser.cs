@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace RecipeBox;
+namespace RecipeBox.Core;
 
 public static class Browser
 {

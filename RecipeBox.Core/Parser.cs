@@ -1,4 +1,4 @@
-﻿namespace RecipeBox;
+﻿namespace RecipeBox.Core;
 
 public static class RecipeParser
 {

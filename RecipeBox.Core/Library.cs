@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace RecipeBox;
+namespace RecipeBox.Core;
 
 public class Library
 {
@@ -31,7 +31,7 @@ public class Library
         const string exampleFilename = "banana-bread.rcp";
         
         var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream($"RecipeBox.recipes.{exampleFilename}");
+        using var stream = assembly.GetManifestResourceStream($"RecipeBox.Core.recipes.{exampleFilename}");
 
         if (stream == null) 
             return;

@@ -8,42 +8,22 @@
         <PublishAot>true</PublishAot>
         <PublishSingleFile>true</PublishSingleFile>
         <IncludeAllContentForSingleFile>true</IncludeAllContentForSingleFile>
-    </PropertyGroup>
-
-    <!-- Platform-specific naming logic -->
-    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-musl-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">
-        <AssemblyName>recipe-box</AssemblyName>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
-        <AssemblyName>RecipeBox</AssemblyName>
-        <PlatformTarget>AnyCPU</PlatformTarget>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64' or '$(RuntimeIdentifier)' == 'osx-arm64'">
-        <AssemblyName>recipe-box</AssemblyName>
-        <PlatformTarget>AnyCPU</PlatformTarget>
+        <OutputType>WinExe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\RecipeBox\RecipeBox.csproj" />
     </ItemGroup>
 
-    <!-- Clear default static web assets behavior -->
     <ItemGroup>
         <Content Remove="wwwroot\**" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ItemGroup>
         <None Include="static\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <Link>static\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </None>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <EmbeddedResource Include="static\**" />
     </ItemGroup>
 
 </Project>

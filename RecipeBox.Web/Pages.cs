@@ -8,6 +8,7 @@ public static class Pages
                          <head>
                             <meta charset="UTF-8"/>
                             <title>Recipe Box</title>
+                            <link rel="shortcut icon" type="image/png" href="/static/images/favicon.png">
                             <link rel="stylesheet" href="/static/css/codemirror.min.css">
                             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/foldgutter.min.css">
                             <script src="/static/js/codemirror.min.js"></script>

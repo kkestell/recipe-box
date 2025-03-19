@@ -25,28 +25,11 @@ public static class Program
         
         var app = builder.Build();
 
-        // Choose the appropriate file provider based on the build configuration
         var staticFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "static");
         IFileProvider fileProvider;
 
-#if DEBUG
-        // In debug mode, use physical files
-        if (Directory.Exists(staticFilesPath))
-        {
-            fileProvider = new PhysicalFileProvider(staticFilesPath);
-            Console.WriteLine("Using physical files from: " + staticFilesPath);
-        }
-        else
-        {
-            // Fallback to embedded resources if the directory doesn't exist
-            fileProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-            Console.WriteLine("DEBUG: Static directory not found, falling back to embedded resources");
-        }
-#else
-        // In release mode, use embedded resources
-        fileProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
-        Console.WriteLine("Using embedded resources for static files");
-#endif
+        fileProvider = new PhysicalFileProvider(staticFilesPath);
+        Console.WriteLine("Using physical files from: " + staticFilesPath);
 
         app.UseStaticFiles(new StaticFileOptions
         {

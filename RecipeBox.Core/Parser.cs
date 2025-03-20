@@ -36,6 +36,7 @@ public static class RecipeParser
         "leaf", "leaves",
         "stalk", "stalks",
         "stem", "stems",
+        "stick", "sticks",
         "bunch", "bunches",
         "sprig", "sprigs",
         "bag", "bags",
@@ -182,43 +183,46 @@ public static class RecipeParser
         throw new SyntaxError("Unclosed metadata section", startLineNumber);
     }
         
-    private static Ingredient ParseIngredient(string input, int lineNumber)
+private static Ingredient ParseIngredient(string input, int lineNumber)
+{
+    // Check if there's a note (after a comma)
+    string? note = null;
+    var commaIndex = input.IndexOf(',');
+    if (commaIndex >= 0)
     {
-        // Check if there's a note (after a comma)
-        string? note = null;
-        var commaIndex = input.IndexOf(',');
-        if (commaIndex >= 0)
-        {
-            note = input[(commaIndex + 1)..].Trim();
-            input = input[..commaIndex].Trim();
-        }
-        
-        // Extract alternative amount in parentheses if present
-        Amount? altAmount = null;
-        if (input.Contains('(') && input.Contains(')'))
-        {
-            var openParenIndex = input.IndexOf('(');
-            var closeParenIndex = input.IndexOf(')', openParenIndex);
+        note = input[(commaIndex + 1)..].Trim();
+        input = input[..commaIndex].Trim();
+    }
+    
+    // Extract alternative amount in parentheses if present
+    Amount? altAmount = null;
+    if (input.Contains('(') && input.Contains(')'))
+    {
+        var openParenIndex = input.IndexOf('(');
+        var closeParenIndex = input.IndexOf(')', openParenIndex);
 
-            if (openParenIndex > 0 && closeParenIndex > openParenIndex)
+        if (openParenIndex > 0 && closeParenIndex > openParenIndex)
+        {
+            var altAmountText = input.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1).Trim();
+            
+            // Check for mixed numbers in the alternative amount
+            var altParts = altAmountText.Split(' ');
+            
+            // Handle mixed fraction case (e.g. "14 1/2 ounces")
+            if (altParts.Length >= 3 && altParts[1].Contains('/')) 
             {
-                var altAmountText = input.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1).Trim();
-                var altParts = altAmountText.Split(' ', 2);
-
-                if (altParts.Length == 2)
+                var mixedNumberStr = $"{altParts[0]} {altParts[1]}";
+                if (TryParseQuantity(mixedNumberStr, out var altQuantity) && altQuantity != null)
                 {
-                    if (!TryParseQuantity(altParts[0], out var altQuantity) || altQuantity == null)
-                    {
-                        throw new SyntaxError($"Invalid alternate quantity: {altParts[0]}", lineNumber);
-                    }
+                    var unit = altParts[2];
                     
                     // Validate alternative unit
-                    if (!AllowedUnits.Contains(altParts[1]))
+                    if (!AllowedUnits.Contains(unit))
                     {
-                        throw new SyntaxError($"Invalid unit: '{altParts[1]}'. Unit must be one of the allowed units.", lineNumber);
+                        throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units. In ingredient {input}.", lineNumber);
                     }
                     
-                    altAmount = new Amount(altQuantity, altParts[1]);
+                    altAmount = new Amount(altQuantity, unit);
 
                     // Remove the alternative amount from the input
                     var beforeAlt = input[..openParenIndex].Trim();
@@ -226,81 +230,156 @@ public static class RecipeParser
                     input = $"{beforeAlt} {afterAlt}".Trim();
                 }
             }
-        }
-
-        // Get parts after processing alt amount and notes
-        var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
-        // Check if the ingredient starts with a digit - expected to have an amount
-        if (parts.Length > 0 && parts[0].Length > 0 && char.IsDigit(parts[0][0]))
-        {
-            // Special handling for mixed numbers like "1 1/2 cups milk"
-            if (parts.Length >= 3 && parts[1].Contains('/'))
+            // Handle regular case (quantity unit)
+            else if (altParts.Length >= 2)
             {
-                var mixedNumberStr = $"{parts[0]} {parts[1]}";
-                if (TryParseQuantity(mixedNumberStr, out var mixedQuantity) && mixedQuantity != null)
+                if (!TryParseQuantity(altParts[0], out var altQuantity) || altQuantity == null)
                 {
-                    var unit = parts[2];
+                    throw new SyntaxError($"Invalid alternate quantity: {altParts[0]}", lineNumber);
+                }
+                
+                // Validate alternative unit
+                if (!AllowedUnits.Contains(altParts[1]))
+                {
+                    throw new SyntaxError($"Invalid unit: '{altParts[1]}'. Unit must be one of the allowed units. In ingredient {input}", lineNumber);
+                }
+                
+                altAmount = new Amount(altQuantity, altParts[1]);
+
+                // Remove the alternative amount from the input
+                var beforeAlt = input[..openParenIndex].Trim();
+                var afterAlt = input[(closeParenIndex + 1)..].Trim();
+                input = $"{beforeAlt} {afterAlt}".Trim();
+            }
+        }
+    }
+
+    // Special case for mixed number ranges like "1 1/4-1 1/2 pounds Pasta"
+    var dashIndex = input.IndexOf('-');
+    if (dashIndex > 0)
+    {
+        var beforeDash = input[..dashIndex].Trim();
+        var afterDash = input[(dashIndex + 1)..].Trim();
+        
+        // Check if we have a pattern that looks like a mixed number on both sides
+        if (beforeDash.Count(c => c == ' ') >= 1 && beforeDash.Contains('/') &&
+            afterDash.Count(c => c == ' ') >= 1 && afterDash.Contains('/'))
+        {
+            var beforeParts = beforeDash.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var afterParts = afterDash.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            
+            if (beforeParts.Length >= 2 && afterParts.Length >= 2 &&
+                char.IsDigit(beforeParts[0][0]) && beforeParts[1].Contains('/') &&
+                char.IsDigit(afterParts[0][0]) && afterParts[1].Contains('/'))
+            {
+                // Extract the min and max mixed numbers
+                var minStr = $"{beforeParts[0]} {beforeParts[1]}";
+                var maxStr = $"{afterParts[0]} {afterParts[1]}";
+                var rangeStr = $"{minStr}-{maxStr}";
+                
+                if (TryParseQuantity(rangeStr, out var rangeQuantity) && rangeQuantity != null)
+                {
+                    var unit = afterParts[2];
                     
                     // Validate unit
                     if (!AllowedUnits.Contains(unit))
                     {
-                        throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units.", lineNumber);
+                        throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units. In ingredient {input}.", lineNumber);
                     }
                     
-                    var name = string.Join(' ', parts.Skip(3));
-                    var amount = new Amount(mixedQuantity, unit);
+                    var name = string.Join(' ', afterParts.Skip(3));
+                    var amount = new Amount(rangeQuantity, unit);
                     return new Ingredient(amount, altAmount, name, note);
                 }
-                else
-                {
-                    throw new SyntaxError($"Invalid mixed number quantity: {parts[0]} {parts[1]}", lineNumber);
-                }
             }
-            
-            // Regular quantity case
-            if (parts.Length >= 2)
+        }
+    }
+
+    // Get parts after processing alt amount and notes
+    var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    
+    // Check if the ingredient starts with a digit - expected to have an amount
+    if (parts.Length > 0 && parts[0].Length > 0 && char.IsDigit(parts[0][0]))
+    {
+        // Special handling for mixed numbers like "1 1/2 cups milk"
+        if (parts.Length >= 3 && parts[1].Contains('/'))
+        {
+            var mixedNumberStr = $"{parts[0]} {parts[1]}";
+            if (TryParseQuantity(mixedNumberStr, out var mixedQuantity) && mixedQuantity != null)
             {
-                if (!TryParseQuantity(parts[0], out var quantity) || quantity == null)
-                {
-                    throw new SyntaxError($"Invalid ingredient quantity: {parts[0]}", lineNumber);
-                }
-                
-                var unit = parts[1];
+                var unit = parts[2];
                 
                 // Validate unit
                 if (!AllowedUnits.Contains(unit))
                 {
-                    throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units.", lineNumber);
+                    throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units. In ingredient {input}.", lineNumber);
                 }
                 
-                var name = string.Join(' ', parts.Skip(2));
-                var amount = new Amount(quantity, unit);
+                var name = string.Join(' ', parts.Skip(3));
+                var amount = new Amount(mixedQuantity, unit);
                 return new Ingredient(amount, altAmount, name, note);
             }
-
-            throw new SyntaxError("Ingredient with quantity must have a unit", lineNumber);
+            else
+            {
+                throw new SyntaxError($"Invalid mixed number quantity: {parts[0]} {parts[1]}", lineNumber);
+            }
         }
         
-        // No quantity - just a name
-        return new Ingredient(null, altAmount, input, note);
-    }    
+        // Regular quantity case
+        if (parts.Length >= 2)
+        {
+            if (!TryParseQuantity(parts[0], out var quantity) || quantity == null)
+            {
+                throw new SyntaxError($"Invalid ingredient quantity: {parts[0]}", lineNumber);
+            }
+            
+            var unit = parts[1];
+            
+            // Validate unit
+            if (!AllowedUnits.Contains(unit))
+            {
+                throw new SyntaxError($"Invalid unit: '{unit}'. Unit must be one of the allowed units. In ingredient {input}.", lineNumber);
+            }
+            
+            var name = string.Join(' ', parts.Skip(2));
+            var amount = new Amount(quantity, unit);
+            return new Ingredient(amount, altAmount, name, note);
+        }
+
+        throw new SyntaxError("Ingredient with quantity must have a unit", lineNumber);
+    }
     
-    private static bool TryParseQuantity(string input, out Quantity? quantity)
+    // No quantity - just a name
+    return new Ingredient(null, altAmount, input, note);
+}
+    
+private static bool TryParseQuantity(string input, out Quantity? quantity)
+{
+    quantity = null;
+    
+    // Check for range "2-3" or mixed number ranges like "1 1/4-1 1/2"
+    if (input.Contains('-'))
     {
-        quantity = null;
+        var rangeParts = input.Split('-');
+        if (rangeParts.Length != 2)
+            return false;
+
+        // Handle mixed numbers in ranges
+        var minStr = rangeParts[0].Trim();
+        var maxStr = rangeParts[1].Trim();
         
-        // Check for range "2-3"
-        if (!input.Contains('-'))
-            return TryParseExactQuantity(input, out quantity);
-        
-        var parts = input.Split('-');
-        if (parts.Length != 2 || !TryParseExactQuantity(parts[0], out var min) || !TryParseExactQuantity(parts[1], out var max) || min == null || max == null)
+        if (!TryParseExactQuantity(minStr, out var min) || min == null)
+            return false;
+            
+        if (!TryParseExactQuantity(maxStr, out var max) || max == null)
             return false;
 
         quantity = new RangeQuantity(min, max);
         return true;
     }
+    
+    return TryParseExactQuantity(input, out quantity);
+}
     
     private static bool TryParseExactQuantity(string input, out Quantity? quantity)
     {

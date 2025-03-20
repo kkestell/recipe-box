@@ -318,7 +318,7 @@ public class RecipeParserTests
             # Heat olive oil in a large pot over medium heat. Add onion and cook until translucent.
 
             * 2 tablespoons olive oil
-            * 1 large onion, diced
+            * 1 each onion, diced
 
             # Add garlic and cook for another minute.
 
@@ -356,6 +356,70 @@ public class RecipeParserTests
         Assert.That(recipe.Sections[0].Steps.Count, Is.EqualTo(2));
         Assert.That(recipe.Sections[1].Steps.Count, Is.EqualTo(3));
         Assert.That(recipe.Sections[1].Steps[2].Ingredients[0].Amount.Quantity, Is.TypeOf<RangeQuantity>());
+    }
+    
+    #endregion
+    
+    #region Ingredients
+    
+    [Test]
+    public void Parse_IngredientWithMixedNumberInParentheses_ParsesCorrectly()
+    {
+        // Arrange
+        const string input = 
+            """
+            = Recipe
+            # Step
+            * 1 can (14 1/2 ounces) Mild Red Enchilada Sauce
+            """;
+
+        // Act
+        var recipe = RecipeParser.Parse(input);
+        var ingredient = recipe.Sections[0].Steps[0].Ingredients[0];
+
+        // Assert
+        Assert.That(ingredient.Name, Is.EqualTo("Mild Red Enchilada Sauce"));
+        Assert.That(ingredient.Amount.Unit, Is.EqualTo("can"));
+        Assert.That(ingredient.AltAmount.Unit, Is.EqualTo("ounces"));
+    
+        var altQuantity = ingredient.AltAmount.Quantity as ExactQuantity;
+        Assert.That(altQuantity.WholeNumber, Is.EqualTo(14));
+        Assert.That(altQuantity.Numerator, Is.EqualTo(1));
+        Assert.That(altQuantity.Denominator, Is.EqualTo(2));
+    }
+    
+    
+    [Test]
+    public void Parse_IngredientWithMixedNumberRange_ParsesCorrectly()
+    {
+        // Arrange
+        const string input = 
+            """
+            = Recipe
+            # Step
+            * 1 1/4-1 1/2 pounds Pasta
+            """;
+
+        // Act
+        var recipe = RecipeParser.Parse(input);
+        var ingredient = recipe.Sections[0].Steps[0].Ingredients[0];
+
+        // Assert
+        Assert.That(ingredient.Name, Is.EqualTo("Pasta"));
+        Assert.That(ingredient.Amount.Unit, Is.EqualTo("pounds"));
+    
+        var range = ingredient.Amount.Quantity as RangeQuantity;
+        Assert.That(range, Is.Not.Null);
+    
+        var min = range.Min as ExactQuantity;
+        Assert.That(min.WholeNumber, Is.EqualTo(1));
+        Assert.That(min.Numerator, Is.EqualTo(1));
+        Assert.That(min.Denominator, Is.EqualTo(4));
+    
+        var max = range.Max as ExactQuantity;
+        Assert.That(max.WholeNumber, Is.EqualTo(1));
+        Assert.That(max.Numerator, Is.EqualTo(1));
+        Assert.That(max.Denominator, Is.EqualTo(2));
     }
     
     #endregion

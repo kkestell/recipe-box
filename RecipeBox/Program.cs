@@ -20,8 +20,16 @@ public static class Program
             options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
         });
 
-        var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var recipesPath = new DirectoryInfo(Path.Combine(documentsPath, "Recipes"));
+        var configuration = builder.Configuration;
+        var libraryPath = configuration["LibraryPath"];
+        
+        if (string.IsNullOrEmpty(libraryPath))
+        {
+            var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            libraryPath = Path.Combine(documentsPath, "Recipes");
+        }
+
+        var recipesPath = new DirectoryInfo(libraryPath);
 
         var library = await Library.Create(recipesPath);
         

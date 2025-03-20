@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox", "RecipeBox\Reci
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Tests", "RecipeBox.Tests\RecipeBox.Tests.csproj", "{D438640E-9247-4D59-AD0F-14E4D020AB9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeBox.Scrapers", "RecipeBox.Scrapers\RecipeBox.Scrapers.csproj", "{80E4E7BA-2402-4B38-A385-35AE6B4488A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D438640E-9247-4D59-AD0F-14E4D020AB9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80E4E7BA-2402-4B38-A385-35AE6B4488A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80E4E7BA-2402-4B38-A385-35AE6B4488A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80E4E7BA-2402-4B38-A385-35AE6B4488A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80E4E7BA-2402-4B38-A385-35AE6B4488A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

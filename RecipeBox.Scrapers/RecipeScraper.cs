@@ -1,11 +1,83 @@
 ﻿using System.Text.Json.Nodes;
+using System.Web;
 using HtmlAgilityPack;
+
+using RecipeBox.Core;
 
 namespace RecipeBox.Scrapers;
 
-internal class Program
+public static class RecipeScraper
 {
-    private static async Task ScrapeRecipe(string url)
+    public static async Task<Recipe> ScrapeRecipe(string url)
+    {
+        var recipeObj = await ExtractRecipeJsonFromUrl(url);
+
+        var title = HttpUtility.HtmlDecode(recipeObj["name"]?.GetValue<string>() ?? "Untitled Recipe");
+                
+        var recipe = new Recipe
+        {
+            Title = title,
+            Description = null,
+            Meta = new Dictionary<string, string>(),
+            Sections = []
+        };
+        
+        var ingredients = ParseIngredients(recipeObj);
+        if (ingredients is not null && ingredients.Count > 0)
+        {
+            var ingredientSection = new Section
+            {
+                Title = "Ingredients",
+                Steps = [
+                    new Step
+                    {
+                        Paragraphs = ["Gather the following ingredients:"],
+                        Ingredients = ingredients.Select(i => new Ingredient(null, null, CleanIngredient(i), null)).ToList()
+                    }
+                ]
+            };
+            recipe.Sections.Add(ingredientSection);
+        }
+        
+        var instructions = ParseInstructions(recipeObj);
+        if (instructions is not null && instructions.Count > 0)
+        {
+            foreach (var section in instructions)
+            {
+                var instructionSection = new Section
+                {
+                    Title = string.IsNullOrEmpty(section.Key) ? "Instructions" : section.Key,
+                    Steps = section.Value.Select(instruction => new Step
+                    {
+                        Paragraphs = [instruction],
+                        Ingredients = []
+                    }).ToList()
+                };
+                recipe.Sections.Add(instructionSection);
+            }
+        }
+        
+        var tip = ParseTip(recipeObj);
+        if (!string.IsNullOrEmpty(tip))
+        {
+            var tipSection = new Section
+            {
+                Title = "Tips",
+                Steps = [
+                    new Step
+                    {
+                        Paragraphs = [tip],
+                        Ingredients = []
+                    }
+                ]
+            };
+            recipe.Sections.Add(tipSection);
+        }
+        
+        return recipe;
+    }
+
+    private static async Task<JsonObject> ExtractRecipeJsonFromUrl(string url)
     {
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
@@ -23,75 +95,10 @@ internal class Program
         
         if (recipeObj is null)
         {
-            Console.WriteLine("No recipe found.");
-            return;
+            throw new ArgumentException("No recipe found at the provided URL.");
         }
         
-        var ingredients = ParseIngredients(recipeObj);
-        
-        if (ingredients is not null && ingredients.Count > 0)
-        {
-            Console.WriteLine("Ingredients:");
-            foreach (var item in ingredients)
-            {
-                Console.WriteLine($"- {item}");
-            }
-            Console.WriteLine();
-        }
-        
-        var instructions = ParseInstructions(recipeObj);
-        
-        if (instructions is not null && instructions.Count > 0)
-        {
-            Console.WriteLine("Instructions:");
-            foreach (var section in instructions)
-            {
-                if (!string.IsNullOrEmpty(section.Key))
-                {
-                    Console.WriteLine($"Section: {section.Key}");
-                }
-                
-                for (int i = 0; i < section.Value.Count; i++)
-                {
-                    Console.WriteLine($"{i+1}. {section.Value[i]}");
-                }
-                
-                Console.WriteLine();
-            }
-        }
-        
-        var tip = ParseTip(recipeObj);
-        if (!string.IsNullOrEmpty(tip))
-        {
-            Console.WriteLine($"Tip: {tip}");
-        }
-    }
-    
-    private static async Task Main()
-    {
-        var urls = new List<string> {
-            "https://www.allrecipes.com/recipe/216981/deluxe-corned-beef-hash/",
-            "https://www.americastestkitchen.com/recipes/10543-couscous-risotto-with-chicken-and-spinach",
-            "https://www.bbcgoodfood.com/recipes/singapore-noodles-0",
-            "https://www.bettycrocker.com/recipes/chicken-parmesan/fea4063a-e494-4d75-bf8e-e88393fbfe5e",
-            "https://www.bonappetit.com/recipe/bas-best-bolognese",
-            "https://www.budgetbytes.com/extra-cheesy-homemade-mac-and-cheese/",
-            "https://www.chowhound.com/1808149/korean-fried-popcorn-chicken-recipe/",
-            "https://www.countryliving.com/food-drinks/a26434198/seared-salmon-watercress-potato-salad-olive-dressing-recipe/",
-            "https://damndelicious.net/2019/04/21/korean-beef-bulgogi/",
-            "https://www.davidlebovitz.com/french-tomato-tart-recipe/",
-            "https://www.delish.com/cooking/recipe-ideas/a58245/easy-baked-eggplant-parmesan-recipe/",
-            "https://www.foodnetwork.com/recipes/moms-garlic-spread-11805239",
-            "https://www.eatingwell.com/recipe/277766/teriyaki-tofu-rice-bowls/",
-            "https://www.epicurious.com/recipes/food/views/oven-grilled-honey-mustard-chicken",
-            "https://www.food.com/recipe/barbs-gumbo-82288",
-            "https://cooking.nytimes.com/recipes/1025331-slow-roasted-salmon-with-salsa-verde"
-        };
-        
-        foreach (var url in urls)
-        {
-            await ScrapeRecipe(url);
-        }
+        return recipeObj;
     }
     
     private static JsonObject? ExtractRecipeObject(List<string> scripts)
@@ -321,4 +328,43 @@ internal class Program
         
         return null;
     }
+
+    private static string CleanIngredient(string ingredient)
+    {
+        ingredient = ingredient.Trim();
+        ingredient = TextUtils.ConvertToCookingFractions(ingredient);
+        ingredient = TextUtils.NormalizeUnits(ingredient);
+        ingredient = TextUtils.UnicodeToAsciiFractions(ingredient);
+        return ingredient;
+    }
 }
+
+// internal class Program
+// {
+//     private static async Task Main()
+//     {
+//         var urls = new List<string> {
+//             "https://www.allrecipes.com/recipe/216981/deluxe-corned-beef-hash/",
+//             "https://www.americastestkitchen.com/recipes/10543-couscous-risotto-with-chicken-and-spinach",
+//             "https://www.bbcgoodfood.com/recipes/singapore-noodles-0",
+//             "https://www.bettycrocker.com/recipes/chicken-parmesan/fea4063a-e494-4d75-bf8e-e88393fbfe5e",
+//             "https://www.bonappetit.com/recipe/bas-best-bolognese",
+//             "https://www.budgetbytes.com/extra-cheesy-homemade-mac-and-cheese/",
+//             "https://www.chowhound.com/1808149/korean-fried-popcorn-chicken-recipe/",
+//             "https://www.countryliving.com/food-drinks/a26434198/seared-salmon-watercress-potato-salad-olive-dressing-recipe/",
+//             "https://damndelicious.net/2019/04/21/korean-beef-bulgogi/",
+//             "https://www.davidlebovitz.com/french-tomato-tart-recipe/",
+//             "https://www.delish.com/cooking/recipe-ideas/a58245/easy-baked-eggplant-parmesan-recipe/",
+//             "https://www.foodnetwork.com/recipes/moms-garlic-spread-11805239",
+//             "https://www.eatingwell.com/recipe/277766/teriyaki-tofu-rice-bowls/",
+//             "https://www.epicurious.com/recipes/food/views/oven-grilled-honey-mustard-chicken",
+//             "https://www.food.com/recipe/barbs-gumbo-82288",
+//             "https://cooking.nytimes.com/recipes/1025331-slow-roasted-salmon-with-salsa-verde"
+//         };
+//         
+//         foreach (var url in urls)
+//         {
+//             await RecipeScraper.ScrapeRecipe(url);
+//         }
+//     }
+// }

@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\RecipeBox.Core\RecipeBox.Core.csproj" />
+        <ProjectReference Include="..\RecipeBox.Scrapers\RecipeBox.Scrapers.csproj" />
     </ItemGroup>
 
     <ItemGroup>

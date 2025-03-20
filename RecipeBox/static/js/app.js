@@ -310,10 +310,12 @@ document.addEventListener('alpine:init', () => {
 
             return this.safeApiCall(
                 async () => {
-                    const response = await fetch('/recipes/import', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: recipeUrl })
+                    const url = new URL('/recipes/import', window.location.origin);
+                    url.searchParams.append('url', recipeUrl);
+
+                    const response = await fetch(url.toString(), {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
                     });
 
                     if (!response.ok) throw new Error('Failed to import recipe');

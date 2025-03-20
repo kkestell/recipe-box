@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.FileProviders;
 
 using RecipeBox.Core;
+using RecipeBox.Scrapers;
 
 namespace RecipeBox;
 
@@ -49,7 +50,6 @@ public static class Program
 
         app.MapGet("/", () => Results.Content(Pages.Index, "text/html"));
 
-        // The rest of your endpoints remain unchanged
         app.MapPost("/recipes", async (HttpRequest request) =>
         {
             var content = "";
@@ -87,9 +87,22 @@ public static class Program
             return Results.Ok(recipes);
         });
 
-        app.MapPost("/recipes/import", () =>
+        app.MapGet("/recipes/import", async (HttpRequest request) =>
         {
-            return Results.BadRequest("Not Implemented");
+            var url = request.Query["url"].ToString();
+            
+            if (string.IsNullOrEmpty(url))
+                return Results.BadRequest("No URL provided.");
+
+            // try
+            // {
+                var recipe = await RecipeScraper.ScrapeRecipe(url);
+                return Results.Text(Renderer.Render(recipe));
+            // }
+            // catch (Exception ex)
+            // {
+            //     return Results.BadRequest("Failed to scrape recipe.");
+            // }
         });
 
         app.MapPost("/recipes/validate", async (HttpRequest request) =>
@@ -185,7 +198,7 @@ public static class Program
         
         app.MapPost("/shutdown", () => 
         {
-            appLifetime.Cancel();
+            // appLifetime.Cancel();
             return Results.Ok();
         });
         

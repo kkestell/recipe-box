@@ -59,6 +59,7 @@ public static class RecipeParser
         var sections = new List<Section>();
         Section? currentSection = null;
         Step? currentStep = null;
+        string? notes = null;
         
         // Process each line
         var i = 0;
@@ -67,6 +68,20 @@ public static class RecipeParser
             var line = lines[i];
             var lineNumber = i + 1;
             i++;
+            
+            // Check for notes marker
+            if (line == "~~~")
+            {
+                // Collect all remaining lines as notes
+                var notesLines = new List<string>();
+                while (i < lines.Count)
+                {
+                    notesLines.Add(lines[i]);
+                    i++;
+                }
+                notes = string.Join("\n", notesLines).Trim();
+                break;
+            }
             
             if (string.IsNullOrEmpty(line))
                 continue;
@@ -140,7 +155,8 @@ public static class RecipeParser
             Title = title,
             Description = description,
             Sections = sections,
-            Meta = meta
+            Meta = meta,
+            Notes = notes
         };
     }
     

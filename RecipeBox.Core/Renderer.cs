@@ -64,6 +64,14 @@ public static class Renderer
             parts.RemoveAt(parts.Count - 1);
         }
 
+        if (!string.IsNullOrEmpty(recipe.Notes))
+        {
+            parts.Add("");
+            parts.Add("~~~");
+            parts.Add("");
+            parts.Add(recipe.Notes);
+        }
+
         return string.Join("\n", parts);
     }
 }

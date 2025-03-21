@@ -62,9 +62,10 @@ public record Section
 public record Recipe
 {
     public required string Title { get; init; } = string.Empty;
-    public required string? Description { get; init; } = string.Empty;
+    public required string Description { get; init; } = string.Empty;
     public required Dictionary<string, string> Meta { get; init; } = new();
     public required List<Section> Sections { get; init; } = [];
+    public string? Notes { get; init; } = string.Empty;
 }
 
 public class SyntaxError(string message, int lineNumber) : Exception(message)

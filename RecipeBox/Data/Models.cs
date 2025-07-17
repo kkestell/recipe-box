@@ -2,6 +2,30 @@
 
 namespace RecipeBox.Data;
 
+public class ParsingError(string message, int lineNumber) : Exception($"{message} (Line: {lineNumber})")
+{
+    public int LineNumber { get; } = lineNumber;
+}
+
+public enum BlockType
+{
+    MetadataDelimiter,
+    MetadataPair,
+    Title,
+    Component,
+    Step,
+    Ingredient,
+    Blank,
+    Unknown
+}
+
+public readonly struct Block(BlockType type, string? value, int lineNumber)
+{
+    public BlockType Type { get; } = type;
+    public string? Value { get; } = value;
+    public int LineNumber { get; } = lineNumber;
+}
+
 public class Step(string text)
 {
     public string Text { get; set; } = text;
@@ -18,6 +42,13 @@ public class Component(string? name = null)
 
 public class Recipe
 {
+    private enum ParserState
+    {
+        Start,
+        InMetadata,
+        InBody
+    }
+
     private Recipe(string content)
     {
         Content = content;
@@ -43,7 +74,7 @@ public class Recipe
         return new Recipe(newContent, originalRecipe);
     }
 
-    public string Title { get; set; }
+    public string Title { get; set; } = "";
     public List<Component> Components { get; set; }
     public Dictionary<string, string> Metadata { get; set; }
     public string Content { get; set; }
@@ -116,104 +147,163 @@ public class Recipe
         return string.Join("\n", output);
     }
 
+    private static List<Block> Lex(string content)
+    {
+        var blocks = new List<Block>();
+        var lines = content.Split('\n');
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i].TrimEnd();
+            var lineNumber = i + 1;
+
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                blocks.Add(new Block(BlockType.Blank, null, lineNumber));
+                continue;
+            }
+
+            if (line.Trim() == "---")
+            {
+                blocks.Add(new Block(BlockType.MetadataDelimiter, null, lineNumber));
+            }
+            else if (line.StartsWith("= "))
+            {
+                blocks.Add(new Block(BlockType.Title, line[2..].Trim(), lineNumber));
+            }
+            else if (line.StartsWith("+ "))
+            {
+                blocks.Add(new Block(BlockType.Component, line[2..].Trim(), lineNumber));
+            }
+            else if (line.StartsWith("# "))
+            {
+                blocks.Add(new Block(BlockType.Step, line[2..].Trim(), lineNumber));
+            }
+            else if (line.Trim().StartsWith("- "))
+            {
+                blocks.Add(new Block(BlockType.Ingredient, line.TrimStart(' ', '-').Trim(), lineNumber));
+            }
+            else if (Regex.IsMatch(line, @"^([\w\s-]+):\s*(.*)$"))
+            {
+                blocks.Add(new Block(BlockType.MetadataPair, line, lineNumber));
+            }
+            else
+            {
+                blocks.Add(new Block(BlockType.Unknown, line, lineNumber));
+            }
+        }
+        return blocks;
+    }
+
     private void Parse()
     {
         if (string.IsNullOrWhiteSpace(Content))
         {
-            throw new ArgumentException("Recipe text cannot be empty");
+            throw new ParsingError("Recipe text cannot be empty", 1);
         }
 
-        var lines = new Queue<string>(Content.Split('\n').Select(l => l.TrimEnd()));
-
-        if (lines.Peek().Trim() == "---")
-        {
-            lines.Dequeue();
-            while (lines.Count > 0 && lines.Peek().Trim() != "---")
-            {
-                var line = lines.Dequeue();
-                var match = Regex.Match(line, @"^([\w\s-]+):\s*(.*)$");
-                if (match.Success)
-                {
-                    var key = match.Groups[1].Value.Trim().ToLower().Replace(" ", "_").Replace("-", "_");
-                    Metadata[key] = match.Groups[2].Value.Trim();
-                }
-            }
-
-            if (lines.Count > 0)
-            {
-                lines.Dequeue();
-            }
-        }
-
+        var blocks = Lex(Content);
+        var state = ParserState.Start;
+        
         Component? currentComponent = null;
         Step? currentStep = null;
 
-        while (lines.Count > 0)
+        foreach (var block in blocks)
         {
-            var line = lines.Dequeue();
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
+            if (block.Type == BlockType.Blank) continue;
 
-            if (line.StartsWith("= "))
+            switch (state)
             {
-                Title = line[2..].Trim();
-                if (currentComponent == null)
-                {
-                    currentComponent = new Component();
-                    Components.Add(currentComponent);
-                }
+                case ParserState.Start:
+                    if (block.Type == BlockType.MetadataDelimiter)
+                    {
+                        state = ParserState.InMetadata;
+                    }
+                    else if (block.Type == BlockType.Title)
+                    {
+                        Title = block.Value!;
+                        currentComponent = new Component();
+                        Components.Add(currentComponent);
+                        state = ParserState.InBody;
+                    }
+                    else if (block.Type is BlockType.Component or BlockType.Step or BlockType.Ingredient)
+                    {
+                        throw new ParsingError($"Recipe body cannot start with '{block.Type}'. Must start with a title.", block.LineNumber);
+                    }
+                    else
+                    {
+                        throw new ParsingError($"Unexpected block '{block.Type}'. Expected metadata or title.", block.LineNumber);
+                    }
+                    break;
 
-                currentStep = null;
-            }
-            else if (line.StartsWith("+ "))
-            {
-                if (currentComponent?.IsEmpty ?? false)
-                {
-                    Components.RemoveAt(Components.Count - 1);
-                }
+                case ParserState.InMetadata:
+                    if (block.Type == BlockType.MetadataPair)
+                    {
+                        var match = Regex.Match(block.Value!, @"^([\w\s-]+):\s*(.*)$");
+                        var key = match.Groups[1].Value.Trim().ToLower().Replace(" ", "_").Replace("-", "_");
+                        Metadata[key] = match.Groups[2].Value.Trim();
+                    }
+                    else if (block.Type == BlockType.MetadataDelimiter)
+                    {
+                        state = ParserState.InBody;
+                    }
+                    else
+                    {
+                        throw new ParsingError($"Unexpected block '{block.Type}' in metadata.", block.LineNumber);
+                    }
+                    break;
 
-                currentStep = null;
-                currentComponent = new Component(line[2..].Trim());
-                Components.Add(currentComponent);
-            }
-            else if (line.StartsWith("# "))
-            {
-                if (currentComponent == null)
-                {
-                    currentComponent = new Component();
-                    Components.Add(currentComponent);
-                }
-
-                currentStep = new Step(line[2..].Trim());
-                currentComponent.Steps.Add(currentStep);
-            }
-            else if (line.Trim().StartsWith("- "))
-            {
-                currentStep?.Ingredients.Add(line.TrimStart(' ', '-').Trim());
+                case ParserState.InBody:
+                    switch (block.Type)
+                    {
+                        case BlockType.Title:
+                            throw new ParsingError("Cannot define a new title.", block.LineNumber);
+                        case BlockType.Component:
+                            if (currentComponent?.IsEmpty ?? false) Components.Remove(currentComponent);
+                            currentComponent = new Component(block.Value);
+                            Components.Add(currentComponent);
+                            currentStep = null;
+                            break;
+                        case BlockType.Step:
+                            if (currentComponent == null)
+                            {
+                                currentComponent = new Component();
+                                Components.Add(currentComponent);
+                            }
+                            currentStep = new Step(block.Value!);
+                            currentComponent.Steps.Add(currentStep);
+                            break;
+                        case BlockType.Ingredient:
+                            if (currentStep == null) throw new ParsingError("Ingredient found outside a step.", block.LineNumber);
+                            currentStep.Ingredients.Add(block.Value!);
+                            break;
+                        case BlockType.MetadataDelimiter:
+                        case BlockType.MetadataPair:
+                            throw new ParsingError("Metadata is not allowed in the recipe body.", block.LineNumber);
+                        case BlockType.Unknown:
+                            throw new ParsingError($"Unknown content: '{block.Value}'", block.LineNumber);
+                    }
+                    break;
             }
         }
-
-        if (string.IsNullOrWhiteSpace(Title) && Components.Count == 0)
-        {
-            throw new ArgumentException("Invalid recipe format: No content found.");
-        }
-
-        if (Components.Count == 0)
-        {
-            Components.Add(new Component());
-        }
-
-        var hasIngredients = Components.Any(c => c.Steps.Any(s => s.Ingredients.Count != 0));
-        if (!hasIngredients)
-        {
-            throw new ArgumentException("Recipe must contain at least one ingredient.");
-        }
-
+        
         if (string.IsNullOrWhiteSpace(Title))
         {
-            throw new ArgumentException("Recipe must have a title.");
+            throw new ParsingError("Recipe must have a title.", 1);
+        }
+        
+        if (!Components.SelectMany(c => c.Steps).SelectMany(s => s.Ingredients).Any())
+        {
+            throw new ParsingError("Recipe must contain at least one ingredient.", blocks.LastOrDefault().LineNumber);
+        }
+
+        foreach (var comp in Components)
+        {
+            if (comp is { Name: not null, Steps.Count: 0 })
+            {
+                var errorBlock = blocks.First(b => b.Type == BlockType.Component && b.Value == comp.Name);
+                throw new ParsingError($"Component '{comp.Name}' must have at least one step.", errorBlock.LineNumber);
+            }
         }
     }
 }

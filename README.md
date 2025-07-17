@@ -6,6 +6,14 @@ A plain-text file format for structured recipes, and a .NET library and command-
 
 The `rbx` command-line tool provides utilities for working with recipe files in a git-based repository.
 
+### Features
+
+* Store recipes as plain-text files in a git repository.
+* Import recipes from the web, images, text.
+* Export individual recipes to PDF, or generate a cookbook.
+* Edit recipes in a built-in text editor with syntax highlighting and helpful error messages.
+
+
 ### Installation
 
 No installers yet. Sorry.
@@ -20,7 +28,7 @@ rbx import <source> [input]
 
 Import a recipe from an external source into the repository.
 
-**Arguments:**
+##### Arguments
 
 `source`
 : Import source type: `url`, `text`, or `image`
@@ -28,7 +36,7 @@ Import a recipe from an external source into the repository.
 `input`
 : Input file path, URL, or text string (optional for text - will read from stdin if not provided)
 
-**Examples:**
+##### Examples
 
 ```bash
 # Import from URL
@@ -53,12 +61,12 @@ rbx show <slug>
 
 Display a recipe.
 
-**Arguments:**
+##### Arguments
 
 `slug`
 : The slug identifier of the recipe to display
 
-**Examples:**
+##### Examples
 
 ```bash
 rbx show best-brownies
@@ -70,14 +78,14 @@ rbx show best-brownies
 rbx edit <slug>
 ```
 
-Edit a recipe in your default editor.
+Edit a recipe in the built-in text editor.
 
-**Arguments:**
+##### Arguments
 
 `slug`
 : The slug identifier of the recipe to edit
 
-**Examples:**
+##### Examples
 
 ```bash
 rbx edit best-brownies
@@ -91,12 +99,12 @@ rbx delete <slug>
 
 Delete a recipe.
 
-**Arguments:**
+##### Arguments
 
 `slug`
 : The slug identifier of the recipe to delete
 
-**Examples:**
+##### Examples
 
 ```bash
 rbx delete best-brownies
@@ -110,7 +118,7 @@ rbx list
 
 List all recipe slugs.
 
-**Examples:**
+##### Examples
 
 ```bash
 rbx list
@@ -122,7 +130,7 @@ rbx list
 
 Export recipes to a PDF file.
 
-**Options:**
+##### Options
 
 `--output <filename>`
 : Output PDF file name (default: cookbook.pdf)
@@ -136,7 +144,7 @@ Export recipes to a PDF file.
 `--include-drafts`
 : Include draft recipes in the export (default: false)
 
-**Examples:**
+##### Examples
 
 ```bash
 # Create a PDF of all non-draft recipes
@@ -166,7 +174,7 @@ rbx export <format> <slug> [options]
 
 Export a recipe to another format.
 
-**Arguments:**
+##### Arguments
 
 `format`
 : Export format: `markdown` or `json`
@@ -174,12 +182,12 @@ Export a recipe to another format.
 `slug`
 : The slug identifier of the recipe to export
 
-**Options:**
+##### Options
 
 `--output <filename>`
 : Output file (default: stdout)
 
-**Examples:**
+##### Examples
 
 ```bash
 # Export to Markdown (stdout)
@@ -287,9 +295,11 @@ var recipeText = """
 ---
 prep_time: 10 minutes
 ---
+
 = Simple Salad
 
 # Wash greens, add tomatoes, and drizzle with oil.
+
 - Mixed greens
 - Cherry tomatoes
 - Olive oil

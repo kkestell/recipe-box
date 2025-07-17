@@ -30,14 +30,14 @@ public static class Program
             TransformOptions
         >(args)
         .MapResult(
-            (ImportOptions opts) => HandleCommand(opts, (o) => ImportCommand.Handle(o, repository)),
-            (ExportOptions opts) => HandleCommand(opts, (o) => ExportCommand.Handle(o, repository)),
-            (PdfOptions opts) => HandleCommand(opts, (o) => PdfCommand.Handle(o, repository)),
-            (ShowOptions opts) => HandleCommand(opts, (o) => ShowCommand.Handle(o, repository)),
-            (EditOptions opts) => HandleCommand(opts, (o) => EditCommand.Handle(o, repository)),
-            (DeleteOptions opts) => HandleCommand(opts, (o) => DeleteCommand.Handle(o, repository)),
-            (ListOptions opts) => HandleCommand(opts, (o) => ListCommand.Handle(o, repository)),
-            (TransformOptions opts) => HandleCommand(opts, (o) => TransformCommand.Handle(o, repository)),
+            (ImportOptions opts) => HandleCommand(opts, o => ImportCommand.Handle(o, repository)),
+            (ExportOptions opts) => HandleCommand(opts, o => ExportCommand.Handle(o, repository)),
+            (PdfOptions opts) => HandleCommand(opts, o => PdfCommand.Handle(o, repository)),
+            (ShowOptions opts) => HandleCommand(opts, o => ShowCommand.Handle(o, repository)),
+            (EditOptions opts) => HandleCommand(opts, o => EditCommand.Handle(o, repository)),
+            (DeleteOptions opts) => HandleCommand(opts, o => DeleteCommand.Handle(o, repository)),
+            (ListOptions opts) => HandleCommand(opts, o => ListCommand.Handle(o, repository)),
+            (TransformOptions opts) => HandleCommand(opts, o => TransformCommand.Handle(o, repository)),
             errs => Task.FromResult(1)
         );
     }

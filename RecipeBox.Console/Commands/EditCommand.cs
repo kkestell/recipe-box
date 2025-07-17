@@ -1,7 +1,6 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using CommandLine;
 using RecipeBox.Data;
+using RecipeBox.Editor;
 
 namespace RecipeBox.Console.Commands;
 
@@ -23,56 +22,37 @@ public static class EditCommand
         }
 
         var tempFile = Path.GetTempFileName();
-        File.Copy(originalRecipe.RepositoryFile.FullName, tempFile, true);
+        await File.WriteAllTextAsync(tempFile, originalRecipe.Content);
 
-        while (true)
+        var editor = new TextEditor(tempFile);
+
+        editor.Validator = text =>
         {
-            await LaunchEditorAndWaitAsync(tempFile);
-            var content = await File.ReadAllTextAsync(tempFile);
-
             try
             {
-                var newRecipe = Recipe.Parse(content, originalRecipe);
-                await repository.UpdateRecipe(newRecipe);
-                break;
+                Recipe.Parse(text, originalRecipe);
+                return (true, string.Empty);
             }
             catch (Exception ex)
             {
-                System.Console.Error.WriteLine($"Error: \nError parsing recipe: {ex.Message}");
-                System.Console.Error.Write("Would you like to (r)e-edit or (a)bort? ");
-                var choice = System.Console.ReadKey().KeyChar.ToString().ToLower();
-                System.Console.Error.WriteLine();
-
-                if (choice == "r") continue;
-                
-                throw new InvalidOperationException($"Edit aborted. Your changes are preserved in '{tempFile}'");
-            }
-        }
-        
-        File.Delete(tempFile);
-        return 0;
-    }
-    
-    private static async Task LaunchEditorAndWaitAsync(string filePath)
-    {
-        var editor = Environment.GetEnvironmentVariable("EDITOR");
-        if (string.IsNullOrWhiteSpace(editor))
-        {
-            editor = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "notepad" : "vim";
-        }
-
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = editor,
-                Arguments = filePath,
-                UseShellExecute = true,
-                CreateNoWindow = false,
+                return (false, ex.Message);
             }
         };
 
-        process.Start();
-        await process.WaitForExitAsync();
+        var saved = editor.Run();
+
+        if (saved)
+        {
+            var newRecipe = Recipe.Parse(editor.Text, originalRecipe);
+            await repository.UpdateRecipe(newRecipe);
+            await System.Console.Out.WriteLineAsync("Recipe updated successfully.");
+        }
+        else
+        {
+            await System.Console.Out.WriteLineAsync("Edit cancelled. Your changes were not saved.");
+        }
+
+        File.Delete(tempFile);
+        return 0;
     }
 }

@@ -10,9 +10,9 @@ The `rbx` command-line tool provides utilities for working with recipe files in 
 
 No installers yet. Sorry.
 
-## Commands
+### Commands
 
-### Import
+#### Import
 
 ```text
 rbx import <source> [input]
@@ -45,7 +45,7 @@ cat recipe.txt | rbx import text
 echo "My recipe text..." | rbx import text
 ```
 
-### Show
+#### Show
 
 ```text
 rbx show <slug>
@@ -64,7 +64,7 @@ Display a recipe.
 rbx show best-brownies
 ```
 
-### Edit
+#### Edit
 
 ```text
 rbx edit <slug>
@@ -83,7 +83,7 @@ Edit a recipe in your default editor.
 rbx edit best-brownies
 ```
 
-### Delete
+#### Delete
 
 ```text
 rbx delete <slug>
@@ -102,7 +102,7 @@ Delete a recipe.
 rbx delete best-brownies
 ```
 
-### List
+#### List
 
 ```text
 rbx list
@@ -116,13 +116,13 @@ List all recipe slugs.
 rbx list
 ```
 
-### PDF
+#### PDF
 
 `rbx pdf [options]`
 
 Export recipes to a PDF file.
 
-#### Options
+**Options:**
 
 `--output <filename>`
 : Output PDF file name (default: cookbook.pdf)
@@ -158,7 +158,7 @@ rbx pdf --include-drafts
 rbx pdf --include-drafts --exclude test-recipe --output complete-cookbook.pdf
 ```
 
-### Export
+#### Export
 
 ```text
 rbx export <format> <slug> [options]
@@ -174,7 +174,7 @@ Export a recipe to another format.
 `slug`
 : The slug identifier of the recipe to export
 
-#### Options
+**Options:**
 
 `--output <filename>`
 : Output file (default: stdout)
@@ -192,7 +192,6 @@ rbx export json best-brownies
 rbx export markdown best-brownies --output my-brownies.md
 rbx export json best-brownies --output recipe.json
 ```
-
 
 ## Recipe Format
 

@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
 
     def show_about_dialog(self):
-        QMessageBox.about(self, "About Recipe Box", "Recipe Box v1.0.0")
+        QMessageBox.about(self, "About Recipe Box", "Recipe Box v0.1.0")
 
     def open_preferences_dialog(self):
         dialog = PreferencesDialog(self)

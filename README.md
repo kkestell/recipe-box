@@ -2,20 +2,74 @@
 
 Recipe Box is a desktop recipe manager for organizing your collection using a simple markup language.
 
-![Recipe Box - Dark Theme](docs/screenshot.png)
-
 ## Features
 
 * Edit recipes in a custom markup language with syntax highlighting and validation on save.
 * Import recipes from any website that supports JSON-LD metadata.
-* Use an AI assistant for recipe modifications, with changes shown in a diff view.
+* Use an AI assistant for recipe modifications, with changes shown in a diff view. Bring your own API key. Supports OpenAI, Anthropic, Google, etc. 
 * Export single recipes or your entire library as beautifully typeset PDFs via Typst.
+* Automatic light / dark theme.
 * Personalize the application with customizable UI fonts, editor fonts, and color schemes.
-* Cross platform. Runs on macOS, Linux, and Windows.
+* Cross-platform. Runs on macOS, Linux, and Windows.
+* BSD-0 licensed.
 
 ## Installation
 
 [Download the latest release](https://github.com/kkestell/recipe-box/releases) from the releases page on GitHub.
+
+## Screenshots
+
+<table width="80%">
+<tr>
+<td align="center">
+<img src="docs/screenshot.png" alt="Dark Theme">
+</td>
+</tr>
+<tr>
+<td align="center">
+Dark Theme
+</td>
+</tr>
+</table>
+
+<table width="80%">
+<tr>
+<td align="center">
+<img src="docs/preferences.png" alt="Preferences">
+</td>
+</tr>
+<tr>
+<td align="center">
+Preferences
+</td>
+</tr>
+</table>
+
+<table width="80%">
+<tr>
+<td align="center">
+<img src="docs/ai-assistant.png" alt="AI Assistant">
+</td>
+</tr>
+<tr>
+<td align="center">
+AI Assistant
+</td>
+</tr>
+</table>
+
+<table width="80%">
+<tr>
+<td align="center">
+<img src="docs/pdf-export.png" alt="PDF Export">
+</td>
+</tr>
+<tr>
+<td align="center">
+PDF Export
+</td>
+</tr>
+</table>
 
 ## Recipe Format
 

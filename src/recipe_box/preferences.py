@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (
     QAbstractTableModel,
+    QEvent,
     QModelIndex,
     QObject,
     Qt,
@@ -15,6 +16,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -56,7 +58,7 @@ class AppPreferences:
     ai_providers: list[AIProvider] = field(default_factory=list)
     editor: EditorSettings = field(default_factory=EditorSettings)
     ui: UISettings = field(default_factory=UISettings)
-    theme: str | None = "Default"
+    theme: str | None = None
 
 
 def get_config_dir() -> Path:
@@ -100,6 +102,16 @@ class Preferences(QObject):
         self._load_themes()
         self.load()
 
+        app = QApplication.instance()
+        if app:
+            app.installEventFilter(self)
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.ThemeChange:
+            if self.data.theme is None:
+                self.preferencesChanged.emit()
+        return super().eventFilter(watched, event)
+
     def _load_themes(self):
         try:
             if not self._themes_path.exists():
@@ -140,7 +152,7 @@ class Preferences(QObject):
                     ai_providers=providers,
                     editor=editor_settings,
                     ui=ui_settings,
-                    theme=raw_data.get("theme", "Default"),
+                    theme=raw_data.get("theme"),
                 )
         except (FileNotFoundError, json.JSONDecodeError):
             self.data = AppPreferences()
@@ -156,8 +168,17 @@ class Preferences(QObject):
             print(f"Error saving preferences: {e}")
 
     def get_theme_colors(self) -> dict[str, str]:
+        theme_name_to_use = self.data.theme
+
+        if not theme_name_to_use:
+            app = QApplication.instance()
+            if app and app.styleHints().colorScheme() == Qt.ColorScheme.Dark:
+                theme_name_to_use = "Dark"
+            else:
+                theme_name_to_use = "Light"
+
         for theme_data in self.themes:
-            if theme_data.name == self.data.theme:
+            if theme_data.name == theme_name_to_use:
                 return theme_data.colors
 
         for theme_data in self.themes:
@@ -282,10 +303,13 @@ class PreferencesDialog(QDialog):
 
         # Theme
         self.theme_combo = QComboBox()
+        self.theme_combo.insertItem(0, "System")
         theme_names = [theme.name for theme in self.prefs.themes]
         self.theme_combo.addItems(theme_names)
         if self.prefs.data.theme:
             self.theme_combo.setCurrentText(self.prefs.data.theme)
+        else:
+            self.theme_combo.setCurrentIndex(0)
 
         # Editor Font
         self.editor_font_family_combo = QFontComboBox()
@@ -379,7 +403,10 @@ class PreferencesDialog(QDialog):
         layout.addLayout(button_layout)
 
     def _save_preferences(self):
-        self.prefs.data.theme = self.theme_combo.currentText()
+        if self.theme_combo.currentIndex() == 0:
+            self.prefs.data.theme = None
+        else:
+            self.prefs.data.theme = self.theme_combo.currentText()
 
         # Editor font
         if self.editor_font_family_combo.currentIndex() == 0:

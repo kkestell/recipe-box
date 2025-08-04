@@ -146,7 +146,6 @@ class RecipeEditor(QTextEdit):
         self.prefs = Preferences.instance()
         self.highlighter = RecipeHighlighter(self.document())
         self.prefs.preferencesChanged.connect(self.apply_preferences)
-        # Use the document's own modification signal for robust dirty tracking.
         self.document().modificationChanged.connect(self.dirtyStateChanged)
         self.apply_preferences()
 

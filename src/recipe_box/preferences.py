@@ -37,7 +37,7 @@ from src.recipe_box.theme import DEFAULT_THEME, MARGIN
 
 @dataclass
 class AIProvider:
-    model: str | None = "new-provider"
+    model: str | None = ""
     api_key: str | None = ""
 
 
@@ -408,7 +408,6 @@ class PreferencesDialog(QDialog):
         else:
             self.prefs.data.theme = self.theme_combo.currentText()
 
-        # Editor font
         if self.editor_font_family_combo.currentIndex() == 0:
             self.prefs.data.editor.font_family = None
         else:
@@ -422,7 +421,6 @@ class PreferencesDialog(QDialog):
         else:
             self.prefs.data.editor.font_size = font_size
 
-        # UI font
         if self.ui_font_family_combo.currentIndex() == 0:
             self.prefs.data.ui.font_family = None
         else:

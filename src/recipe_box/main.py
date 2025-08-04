@@ -7,6 +7,9 @@ import sys
 import tempfile
 from dataclasses import replace
 from pathlib import Path
+import datetime
+import zipfile
+import re
 
 import PySide6.QtAsyncio as QtAsyncio
 from PySide6.QtCore import Qt, QSize
@@ -39,6 +42,12 @@ def get_db_path() -> Path:
     return Path.home() / ".config" / "RecipeBox" / "RecipeBox.db"
 
 
+def slugify(value: str) -> str:
+    value = re.sub(r"[^\w\s-]", "", value).strip().lower()
+    value = re.sub(r"[-\s]+", "-", value)
+    return value
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -58,11 +67,13 @@ class MainWindow(QMainWindow):
         self.assistant_action: QAction | None = None
         self.export_recipe_action: QAction | None = None
         self.export_cookbook_action: QAction | None = None
+        self.export_library_action: QAction | None = None
 
         self.splitter = QSplitter(self)
         self.setCentralWidget(self.splitter)
         self.recipe_browser = RecipeBrowser()
         self.recipe_editor = RecipeEditor()
+        self.splitter.setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN)
         self.splitter.addWidget(self.recipe_browser)
         self.splitter.addWidget(self.recipe_editor)
         self.splitter.setSizes([300, 700])
@@ -98,7 +109,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self.delete_action)
 
         file_menu.addSeparator()
-        import_action = QAction("&Import...", self)
+        import_action = QAction("&Import from URL...", self)
         import_action.triggered.connect(
             lambda: asyncio.ensure_future(self.import_from_url())
         )
@@ -126,6 +137,19 @@ class MainWindow(QMainWindow):
         prefs_action.triggered.connect(self.open_preferences_dialog)
         edit_menu.addAction(prefs_action)
 
+        library_menu = menu_bar.addMenu("&Library")
+        import_library_action = QAction("&Import...", self)
+        import_library_action.triggered.connect(
+            lambda: asyncio.ensure_future(self.import_library())
+        )
+        library_menu.addAction(import_library_action)
+
+        self.export_library_action = QAction("&Export...", self)
+        self.export_library_action.triggered.connect(
+            lambda: asyncio.ensure_future(self.export_library())
+        )
+        library_menu.addAction(self.export_library_action)
+
         recipe_menu = menu_bar.addMenu("&Recipe")
         self.assistant_action = QAction("AI Assistant...", self)
         self.assistant_action.triggered.connect(self.open_assistant)
@@ -144,7 +168,6 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def apply_app_styles(self):
-        """Applies application-wide styles from preferences."""
         app = QApplication.instance()
         prefs = self.preferences.data
 
@@ -164,7 +187,9 @@ class MainWindow(QMainWindow):
         self.delete_action.setEnabled(has_selection)
         self.assistant_action.setEnabled(has_selection)
         self.export_recipe_action.setEnabled(has_selection)
-        self.export_cookbook_action.setEnabled(bool(self.lib.list_recipes()))
+        has_recipes = bool(self.lib.list_recipes())
+        self.export_cookbook_action.setEnabled(has_recipes)
+        self.export_library_action.setEnabled(has_recipes)
 
     async def import_from_url(self):
         url, ok = QInputDialog.getText(self, "Import Recipe", "Enter URL:")
@@ -336,7 +361,7 @@ class MainWindow(QMainWindow):
         dialog.accepted_with_text.connect(self.recipe_editor.setPlainText)
         dialog.exec()
 
-    def _run_typst_in_thread(self, typst_source):
+    def run_typst_process(self, typst_source):
         try:
             with tempfile.TemporaryDirectory() as tempdir:
                 source_path = Path(tempdir) / "recipe.typ"
@@ -381,7 +406,7 @@ class MainWindow(QMainWindow):
         if not recipe:
             return
 
-        default_filename = f"{recipe.title}.pdf"
+        default_filename = f"{slugify(recipe.title)}.pdf"
         filepath, _ = QFileDialog.getSaveFileName(
             self, "Export Recipe as PDF", default_filename, "PDF Files (*.pdf)"
         )
@@ -393,9 +418,7 @@ class MainWindow(QMainWindow):
 
         try:
             typst_source = TypstRenderer.render([recipe])
-            pdf_data, error = await asyncio.to_thread(
-                self._run_typst_in_thread, typst_source
-            )
+            pdf_data, error = self.run_typst_process(typst_source)
 
             if error:
                 QMessageBox.critical(self, "Export Failed", error)
@@ -440,7 +463,7 @@ class MainWindow(QMainWindow):
             return
 
         filepath, _ = QFileDialog.getSaveFileName(
-            self, "Export Cookbook as PDF", f"{title}.pdf", "PDF Files (*.pdf)"
+            self, "Export Cookbook as PDF", f"{slugify(title)}.pdf", "PDF Files (*.pdf)"
         )
         if not filepath:
             return
@@ -452,9 +475,7 @@ class MainWindow(QMainWindow):
             typst_source = TypstRenderer.render(
                 all_recipes, title=title, subtitle=subtitle
             )
-            pdf_data, error = await asyncio.to_thread(
-                self._run_typst_in_thread, typst_source
-            )
+            pdf_data, error = self.run_typst_process(typst_source)
 
             if error:
                 QMessageBox.critical(self, "Export Failed", error)
@@ -465,6 +486,98 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(
                     f"Successfully exported cookbook to {Path(filepath).name}", 5000
                 )
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Export Error", f"An unexpected error occurred: {e}"
+            )
+            self.statusBar().showMessage("Export failed.", 5000)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def _create_zip_archive(self, filepath: str, recipes: list[Recipe]):
+        with zipfile.ZipFile(filepath, "w", zipfile.ZIP_DEFLATED) as zf:
+            for recipe in recipes:
+                if recipe.title:
+                    filename = f"{slugify(recipe.title)}.txt"
+                else:
+                    # Fallback for untitled recipes
+                    filename = f"recipe-{recipe.id}.txt"
+                content = recipe.serialize()
+                zf.writestr(filename, content)
+
+    def _read_zip_archive(self, filepath: str) -> tuple[int, int]:
+        imported_count = 0
+        failed_count = 0
+        with zipfile.ZipFile(filepath, "r") as zf:
+            for filename in zf.namelist():
+                if not filename.lower().endswith(".txt"):
+                    continue
+                try:
+                    content = zf.read(filename).decode("utf-8")
+                    if content.strip():
+                        recipe = Recipe.parse(content)
+                        self.lib.add_recipe(recipe)
+                        imported_count += 1
+                except Exception as e:
+                    print(e)
+                    failed_count += 1
+        return imported_count, failed_count
+
+    async def import_library(self):
+        if not self._prompt_save_if_dirty():
+            return
+
+        filepath, _ = QFileDialog.getOpenFileName(
+            self, "Import Library from .zip", "", "Zip Files (*.zip)"
+        )
+        if not filepath:
+            return
+
+        self.statusBar().showMessage("Importing library from .zip...", 3000)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            imported_count, failed_count = self._read_zip_archive(filepath)
+            self.load_recipes()
+
+            summary = f"Imported {imported_count} recipes."
+            if failed_count > 0:
+                summary += f" {failed_count} files failed to import."
+            self.statusBar().showMessage(summary, 5000)
+            QMessageBox.information(self, "Import Complete", summary)
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Import Error", f"An unexpected error occurred: {e}"
+            )
+            self.statusBar().showMessage("Import failed.", 5000)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    async def export_library(self):
+        """Exports the entire recipe library to a zip file."""
+        all_recipes = self.lib.list_recipes()
+        if not all_recipes:
+            QMessageBox.information(
+                self,
+                "Export Library",
+                "There are no recipes in the library to export.",
+            )
+            return
+
+        today_str = datetime.date.today().isoformat()
+        default_filename = f"Recipes {today_str}.zip"
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, "Export Library as .zip", default_filename, "Zip Files (*.zip)"
+        )
+        if not filepath:
+            return
+
+        self.statusBar().showMessage("Exporting library to .zip...", 3000)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            self._create_zip_archive(filepath, all_recipes)
+            self.statusBar().showMessage(
+                f"Successfully exported library to {Path(filepath).name}", 5000
+            )
         except Exception as e:
             QMessageBox.critical(
                 self, "Export Error", f"An unexpected error occurred: {e}"

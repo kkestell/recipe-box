@@ -68,7 +68,7 @@ class RecipeBrowser(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(MARGIN, MARGIN, 0, 0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(MARGIN)
         self._filter_edit = QLineEdit()
         self._filter_edit.setPlaceholderText("Filter recipes...")

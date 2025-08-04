@@ -78,16 +78,16 @@ The Recipe Box format is a simple, structured way to write recipes in plain text
 ```smidge
 = Classic Brownies
 
-# Melt 1 cup butter and mix with 2 cups sugar.
+# Melt butter and mix with sugar.
 
 - 1 cup butter
 - 2 cups sugar
 
-# Beat in 4 eggs, one at a time.
+# Beat in eggs, one at a time.
 
 - 4 eggs
 
-# Fold in 3/4 cup cocoa powder and 1 cup flour.
+# Fold in cocoa powder and flour.
 
 - 3/4 cup cocoa powder
 - 1 cup flour
@@ -112,11 +112,11 @@ For more complex recipes, you can use a plus (`+`) prefix to create named compon
 
 + Chicken
 
-# Pound 4 chicken breasts thin.
+# Pound chicken breasts thin.
 
 - 4 chicken breasts
 
-# Dip in 2 eggs, then 1 cup breadcrumbs.
+# Dip in eggs, then breadcrumbs.
 
 - 2 eggs
 - 1 cup breadcrumbs
@@ -125,12 +125,12 @@ For more complex recipes, you can use a plus (`+`) prefix to create named compon
 
 + Sauce
 
-# Sauté 3 cloves garlic in 1 tbsp olive oil until fragrant.
+# Sauté garlic in olive oil until fragrant.
 
 - 3 cloves garlic
 - 1 tbsp olive oil
   
-# Add 1 can crushed tomatoes and 1 tsp oregano, then simmer.
+# Add crushed tomatoes and oregano, then simmer.
 
 - 1 can crushed tomatoes
 - 1 tsp oregano

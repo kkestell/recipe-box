@@ -15,29 +15,12 @@ class Library:
         self._conn.text_factory = str
         if not db_existed:
             self._create_table()
-            self._initial_import()
 
     def _create_table(self):
         with self._conn:
             self._conn.execute(
                 "CREATE TABLE IF NOT EXISTS recipes (id INTEGER PRIMARY KEY, content TEXT NOT NULL)"
             )
-
-    def _initial_import(self, folder_path: str = "~/Documents/Recipes"):
-        recipe_dir = Path(folder_path).expanduser()
-        if not recipe_dir.is_dir():
-            print(f"Initial import directory not found: {recipe_dir}")
-            return
-        for file_path in recipe_dir.glob("*.txt"):
-            try:
-                with file_path.open("r", encoding="utf-8") as f:
-                    content = f.read()
-                if content.strip():
-                    recipe = Recipe.parse(content)
-                    self.add_recipe(recipe)
-                    print(f"Imported: {recipe.title}")
-            except Exception as e:
-                print(f"Failed to import {file_path.name}: {e}")
 
     def add_recipe(self, recipe: Recipe) -> int:
         content = recipe.serialize()

@@ -22,7 +22,20 @@ Recipe Box is a desktop recipe manager for organizing your collection using a si
 <table width="80%">
 <tr>
 <td align="center">
-<img src="docs/screenshot.png" alt="Dark Theme">
+<img src="docs/light.png" alt="Light Theme">
+</td>
+</tr>
+<tr>
+<td align="center">
+Light Theme
+</td>
+</tr>
+</table>
+
+<table width="80%">
+<tr>
+<td align="center">
+<img src="docs/dark.png" alt="Dark Theme">
 </td>
 </tr>
 <tr>
